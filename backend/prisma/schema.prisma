@@ -1,0 +1,73 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  team      Team?
+}
+
+model Team {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id])
+  name      String   @default("My Team")
+  budget    Decimal  @default(5000000)
+  isReady   Boolean  @default(false)
+  players   Player[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum Position {
+  GK
+  DEF
+  MID
+  ATT
+}
+
+model Player {
+  id               String   @id @default(uuid())
+  teamId           String
+  team             Team     @relation(fields: [teamId], references: [id])
+  name             String
+  position         Position
+  age              Int
+  country          String
+  value            Decimal
+  goals            Int      @default(0)
+  assists          Int      @default(0)
+  isOnTransferList Boolean  @default(false)
+  askingPrice      Decimal?
+  isStarter        Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model PlayerPool {
+  id           String   @id @default(uuid())
+  externalId   String   @unique // API player ID
+  name         String
+  position     Position
+  age          Int
+  country      String
+  originalTeam String? // Name of the real-life team
+  imageUrl     String? // URL to player image
+  marketValue  Decimal
+  goals        Int      @default(0)
+  assists      Int      @default(0)
+  createdAt    DateTime @default(now())
+}
