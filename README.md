@@ -46,14 +46,7 @@ Before running the application, ensure you have the following installed:
 
 ## Installation & Setup
 
-### 1. Clone the Repository
-
-```bash
-git clone https://github.com/amagdy46/football-fantasy-manager.git
-cd football-fantasy-manager
-```
-
-### 2. Start Infrastructure (PostgreSQL & Redis)
+### 1. Start Infrastructure (PostgreSQL & Redis)
 
 Use Docker Compose to start the database and Redis services.
 
@@ -61,7 +54,7 @@ Use Docker Compose to start the database and Redis services.
 docker-compose up -d postgres redis
 ```
 
-### 3. Backend Setup
+### 2. Backend Setup
 
 Navigate to the backend directory, install dependencies, and set up the database.
 
@@ -82,7 +75,7 @@ npm run dev
 
 The backend server will start on `http://localhost:3001`.
 
-### 4. Frontend Setup
+### 3. Frontend Setup
 
 Open a new terminal, navigate to the frontend directory, and start the client.
 
