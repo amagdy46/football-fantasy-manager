@@ -2,7 +2,7 @@ import { Loader2, AlertCircle } from "lucide-react";
 import { useTeamStatusQuery } from "../queries";
 
 export default function LoadingPage() {
-  const { isError, refetch } = useTeamStatusQuery({ polling: true });
+  const { isError, refetch } = useTeamStatusQuery();
 
   return (
     <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-white p-4">

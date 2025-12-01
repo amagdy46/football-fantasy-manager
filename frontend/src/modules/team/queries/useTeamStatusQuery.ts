@@ -5,9 +5,7 @@ import { getTeamStatus } from "../../../lib/api";
 
 export const TEAM_STATUS_QUERY_KEY = ["teamStatus"] as const;
 
-const POLL_INTERVAL = 2000;
-
-export const useTeamStatusQuery = (options?: { polling?: boolean }) => {
+export const useTeamStatusQuery = () => {
   const navigate = useNavigate();
 
   const query = useQuery({
@@ -15,16 +13,14 @@ export const useTeamStatusQuery = (options?: { polling?: boolean }) => {
     queryFn: getTeamStatus,
     retry: 3,
     retryDelay: 1000,
-    refetchInterval: options?.polling
-      ? (query) => (query.state.data?.isReady ? false : POLL_INTERVAL)
-      : false,
+    staleTime: 0,
   });
 
   useEffect(() => {
-    if (options?.polling && query.data?.isReady) {
+    if (query.data?.isReady) {
       navigate("/dashboard");
     }
-  }, [options?.polling, query.data?.isReady, navigate]);
+  }, [query.data?.isReady, navigate]);
 
   return query;
 };

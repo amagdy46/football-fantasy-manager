@@ -10,6 +10,7 @@ import { AuthProvider, useAuth, AuthPage } from "./modules/auth";
 import { LoadingPage, DashboardPage } from "./modules/team/pages";
 import { TransferMarketPage } from "./modules/transfers";
 import { Toaster } from "sonner";
+import { useWebSocket } from "./hooks/useWebSocket";
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated } = useAuth();
@@ -19,9 +20,15 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
+function WebSocketManager() {
+  useWebSocket();
+  return null;
+}
+
 function AppRoutes() {
   return (
     <Router>
+      <WebSocketManager />
       <Routes>
         <Route path="/auth" element={<AuthPage />} />
         <Route

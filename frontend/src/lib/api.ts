@@ -2,8 +2,20 @@ import axios from "axios";
 import { Team, TeamStatusResponse } from "@/types";
 import { TransferFilters } from "@/modules/transfers/types";
 
+const getBaseURL = () => {
+  const envUrl = import.meta.env.VITE_API_URL;
+  const defaultUrl = "http://localhost:3001/api";
+  const baseURL = envUrl || defaultUrl;
+
+  if (baseURL.startsWith("http") && !baseURL.endsWith("/api")) {
+    return baseURL.endsWith("/") ? `${baseURL}api` : `${baseURL}/api`;
+  }
+
+  return baseURL;
+};
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:3001/api",
+  baseURL: getBaseURL(),
   headers: {
     "Content-Type": "application/json",
   },
