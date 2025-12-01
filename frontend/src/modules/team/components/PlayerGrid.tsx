@@ -6,11 +6,6 @@ interface PlayerGridProps {
 }
 
 export const PlayerGrid = ({ players }: PlayerGridProps) => {
-  // If showing bench only (mixed positions), grouping might be overkill if list is small,
-  // but keeps consistency. Let's simplify for bench view or keep sections.
-  // The prompt asked for "Reserves" like FPL. FPL bench is usually just a row.
-  // But here we might have 9 players.
-
   const groupedPlayers = {
     GK: players.filter((p) => p.position === "GK"),
     DEF: players.filter((p) => p.position === "DEF"),

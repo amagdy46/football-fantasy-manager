@@ -1,12 +1,14 @@
-import { Request, Response, NextFunction } from "express";
+import { Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
+import { AuthRequest } from "../types";
 
-interface AuthRequest extends Request {
-  user?: {
-    userId: string;
-    email: string;
-  };
-}
+export const getJwtSecret = (): string => {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw new Error("JWT_SECRET environment variable must be set");
+  }
+  return secret;
+};
 
 export const authenticateToken = (
   req: AuthRequest,
@@ -20,15 +22,15 @@ export const authenticateToken = (
     return res.status(401).json({ message: "Authentication required" });
   }
 
-  jwt.verify(
-    token,
-    process.env.JWT_SECRET || "default_secret",
-    (err: any, user: any) => {
-      if (err) {
-        return res.status(403).json({ message: "Invalid or expired token" });
-      }
-      req.user = user;
-      next();
-    }
-  );
+  try {
+    const secret = getJwtSecret();
+    const decoded = jwt.verify(token, secret) as {
+      userId: string;
+      email: string;
+    };
+    req.user = decoded;
+    next();
+  } catch (err) {
+    return res.status(403).json({ message: "Invalid or expired token" });
+  }
 };

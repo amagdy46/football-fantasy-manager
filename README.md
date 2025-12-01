@@ -5,16 +5,19 @@ A full-stack fantasy football management web application where users can manage 
 ## Features
 
 ### 🔐 Authentication
+
 - **Secure Sign-up & Login**: User registration and login flows with JWT authentication.
 - **Protected Routes**: Secure navigation ensuring only authenticated users can access the dashboard and market.
 
 ### ⚽ Team Management
+
 - **Automatic Team Creation**: New users are automatically assigned a randomly generated squad of 20 players (3 GK, 6 DEF, 6 MID, 5 ATT).
 - **Interactive Dashboard**: View your starting XI on a visualized football pitch and manage your bench.
 - **Player Details**: Detailed player cards showing position, stats (goals/assists), market value, and transfer status.
 - **Team Customization**: Edit your team name and manage your roster.
 
 ### 💸 Transfer Market
+
 - **Live Transfer List**: List your own players for sale with a custom asking price.
 - **Real-time Market**: Browse players listed by other users with real-time updates.
 - **Smart Filtering**: Filter players by name, team, position, and price range.
@@ -26,6 +29,7 @@ A full-stack fantasy football management web application where users can manage 
   - 95% of the transaction value goes to the seller (5% tax).
 
 ### ⚡ Technical Highlights
+
 - **Modular Architecture**: scalable and maintainable code structure for both frontend and backend.
 - **Background Jobs**: Asynchronous team generation using Redis and BullMQ.
 - **Optimized Performance**: React Query for efficient data fetching and caching.
@@ -43,19 +47,24 @@ Before running the application, ensure you have the following installed:
 ## Installation & Setup
 
 ### 1. Clone the Repository
+
 ```bash
-git clone https://github.com/your-username/football-fantasy-manager.git
+git clone https://github.com/amagdy46/football-fantasy-manager.git
 cd football-fantasy-manager
 ```
 
 ### 2. Start Infrastructure (PostgreSQL & Redis)
+
 Use Docker Compose to start the database and Redis services.
+
 ```bash
 docker-compose up -d postgres redis
 ```
 
 ### 3. Backend Setup
+
 Navigate to the backend directory, install dependencies, and set up the database.
+
 ```bash
 cd backend
 
@@ -63,16 +72,20 @@ cd backend
 npm install
 
 # Run database migrations and seed initial player pool
-npx prisma migrate dev
-npx ts-node src/scripts/seed.ts
+npm run db:setup
+
 
 # Start the development server
 npm run dev
+
 ```
+
 The backend server will start on `http://localhost:3001`.
 
 ### 4. Frontend Setup
+
 Open a new terminal, navigate to the frontend directory, and start the client.
+
 ```bash
 cd frontend
 
@@ -81,7 +94,9 @@ npm install
 
 # Start the development server
 npm run dev
+
 ```
+
 The frontend application will start on `http://localhost:5173`.
 
 ## Environment Variables
@@ -89,6 +104,7 @@ The frontend application will start on `http://localhost:5173`.
 The application comes with default `.env.example` files. You can copy them to `.env` or use the defaults for local development.
 
 ### Backend (`backend/.env`)
+
 ```env
 PORT=3001
 DATABASE_URL="postgresql://user:password@localhost:5432/football_fantasy?schema=public"
@@ -98,6 +114,7 @@ CORS_ORIGIN="http://localhost:5173"
 ```
 
 ### Frontend (`frontend/.env`)
+
 ```env
 VITE_API_URL="http://localhost:3001/api"
 ```
@@ -107,32 +124,18 @@ VITE_API_URL="http://localhost:3001/api"
 The project includes unit and integration tests for both ends of the stack.
 
 **Backend Tests (Vitest):**
+
 ```bash
 cd backend
 npm test
 ```
 
 **Frontend Tests (Vitest + React Testing Library):**
+
 ```bash
 cd frontend
 npm test
 ```
-
-## Time Report
-
-| Task / Section | Time Spent | Description |
-| :--- | :--- | :--- |
-| **Project Setup** | 2h | Initial repo setup, Docker configuration, folder structure, CI smoke tests. |
-| **Database & Models** | 3h | Prisma schema design (User, Team, Player), migrations, and model tests. |
-| **Player Pool System** | 4h | Seeding script, fetching data from external API, player value calculation logic. |
-| **Authentication** | 4h | JWT implementation, AuthController, AuthContext (Frontend), Login/Register UI. |
-| **Team Logic & Jobs** | 5h | BullMQ setup for async team generation, polling logic on frontend, loading states. |
-| **Dashboard UI** | 6h | Dashboard layout, Soccer Pitch visualization, Player Cards, Team management logic. |
-| **Transfer Backend** | 5h | Transfer list API, filters, transactional buy logic, validation rules. |
-| **Transfer Market UI** | 5h | Market page, filters sidebar, buy modal, integration with transfer API. |
-| **Refactoring** | 4h | Modular architecture implementation, cleaning up imports, improving test coverage. |
-| **Documentation** | 2h | README, architecture docs, code cleanup. |
-| **Total** | **~40h** | |
 
 ## Tech Stack
 
@@ -143,5 +146,5 @@ npm test
 - **Testing**: Vitest, Supertest, React Testing Library.
 
 ## License
-This project is open-source and available under the MIT License.
 
+This project is open-source and available under the MIT License.

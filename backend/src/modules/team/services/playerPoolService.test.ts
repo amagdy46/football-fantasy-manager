@@ -5,7 +5,6 @@ import {
   calculateMarketValue,
   generateStats,
 } from "./playerPoolService";
-import { Position } from "@prisma/client";
 
 describe("PlayerPoolService Logic", () => {
   describe("mapPosition", () => {
@@ -34,10 +33,8 @@ describe("PlayerPoolService Logic", () => {
   describe("calculateAge", () => {
     it("should calculate age correctly", () => {
       const dob = "1990-01-01";
-      // Approximate check as "now" changes
       const age = calculateAge(dob);
       const expectedAge = new Date().getFullYear() - 1990;
-      // Allow +/- 1 year difference depending on current month
       expect(age).toBeGreaterThanOrEqual(expectedAge - 1);
       expect(age).toBeLessThanOrEqual(expectedAge);
     });
@@ -50,7 +47,6 @@ describe("PlayerPoolService Logic", () => {
     });
 
     it("should apply age modifier for young players", () => {
-      // Cannot strictly test random logic without mocking, but we can check if it returns valid number
       const value = calculateMarketValue("ATT", 19);
       expect(typeof value).toBe("number");
     });
@@ -58,12 +54,17 @@ describe("PlayerPoolService Logic", () => {
 
   describe("generateStats", () => {
     it("should generate zero goals for GK", () => {
-      const stats = generateStats("GK", 10000000);
+      const stats = generateStats("GK", 3000000);
       expect(stats.goals).toBe(0);
     });
 
-    it("should generate stats for ATT", () => {
-      const stats = generateStats("ATT", 10000000);
+    it("should generate stats for ATT with high value", () => {
+      const stats = generateStats("ATT", 3000000);
+      expect(stats.goals).toBeGreaterThanOrEqual(10);
+    });
+
+    it("should generate stats for ATT with low value", () => {
+      const stats = generateStats("ATT", 1000000);
       expect(stats.goals).toBeGreaterThanOrEqual(2);
     });
   });

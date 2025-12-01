@@ -1,5 +1,6 @@
 import axios from "axios";
-import { Team } from "../types";
+import { Team, TeamStatusResponse } from "@/types";
+import { TransferFilters } from "@/modules/transfers/types";
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || "http://localhost:3001/api",
@@ -8,7 +9,6 @@ const api = axios.create({
   },
 });
 
-// Request interceptor to add auth token
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
@@ -18,6 +18,18 @@ api.interceptors.request.use(
     return config;
   },
   (error) => Promise.reject(error)
+);
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      window.location.href = "/auth";
+    }
+    return Promise.reject(error);
+  }
 );
 
 export const getTeam = async (): Promise<Team> => {
@@ -30,13 +42,8 @@ export const updateTeamName = async (name: string): Promise<Team> => {
   return response.data;
 };
 
-export const getTeamStatus = async (): Promise<{
-  isReady: boolean;
-  teamId?: string;
-}> => {
-  const response = await api.get<{ isReady: boolean; teamId?: string }>(
-    "/team/status"
-  );
+export const getTeamStatus = async (): Promise<TeamStatusResponse> => {
+  const response = await api.get<TeamStatusResponse>("/team/status");
   return response.data;
 };
 
@@ -50,10 +57,13 @@ export const toggleTransferList = async (
   return response.data;
 };
 
-import { TransferFilters } from "../modules/transfers/types";
-
 export const getTransfers = async (params: TransferFilters) => {
   const response = await api.get("/transfers", { params });
+  return response.data;
+};
+
+export const buyPlayer = async (playerId: string) => {
+  const response = await api.post(`/transfers/buy/${playerId}`);
   return response.data;
 };
 

@@ -8,7 +8,6 @@ export const useUpdateTeamNameMutation = () => {
   return useMutation({
     mutationFn: (newName: string) => updateTeamName(newName),
     onSuccess: () => {
-      // Invalidate and refetch team data
       queryClient.invalidateQueries({ queryKey: TEAM_QUERY_KEY });
     },
   });

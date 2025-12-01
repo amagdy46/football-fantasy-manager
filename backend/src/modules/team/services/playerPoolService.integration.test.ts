@@ -4,8 +4,7 @@ import prisma from "@/config/database";
 
 describe("PlayerPoolService Integration", () => {
   beforeAll(async () => {
-    // Optional: Clean up before test if you want a fresh seed every time
-    // await prisma.playerPool.deleteMany({});
+    await prisma.playerPool.deleteMany({});
   });
 
   afterAll(async () => {
@@ -13,17 +12,12 @@ describe("PlayerPoolService Integration", () => {
   });
 
   it("should seed the database with players", async () => {
-    // 1. Run seeding
     await PlayerPoolService.seedPlayers();
 
-    // 2. Check count
     const count = await prisma.playerPool.count();
-    console.log(`Integration Test: Database has ${count} players`);
 
-    // 3. Assert
     expect(count).toBeGreaterThan(0);
 
-    // 4. Check data integrity of a random player
     const player = await prisma.playerPool.findFirst();
     expect(player).toBeDefined();
     expect(player?.marketValue.toNumber()).toBeGreaterThan(0);
@@ -31,7 +25,6 @@ describe("PlayerPoolService Integration", () => {
   });
 
   it("should fetch random players by position", async () => {
-    // Ensure data exists
     const count = await prisma.playerPool.count();
     if (count < 5) await PlayerPoolService.seedPlayers();
 

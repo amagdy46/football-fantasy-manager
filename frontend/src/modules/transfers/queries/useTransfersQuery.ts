@@ -8,8 +8,6 @@ const fetchTransfers = async (
   filters: TransferFilters
 ): Promise<TransferPlayer[]> => {
   const data = await getTransfers(filters);
-  // Transform data if needed, but backend should return compatible structure
-  // Need to ensure backend returns array of players with teamName
   return data;
 };
 

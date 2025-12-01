@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Player } from "../types";
 import { DollarSign, Trash2, Loader2 } from "lucide-react";
-import { useTransferActions } from "../hooks/useTransferActions";
+import { useListPlayerMutation, useUnlistPlayerMutation } from "../mutations";
+import { formatCurrency, getPositionColor } from "@/lib/utils";
 
 interface PlayerCardProps {
   player: Player;
@@ -10,47 +11,24 @@ interface PlayerCardProps {
 export const PlayerCard = ({ player }: PlayerCardProps) => {
   const [showTransferModal, setShowTransferModal] = useState(false);
   const [askingPrice, setAskingPrice] = useState<string | number>(player.value);
-  const {
-    handleListForTransfer,
-    handleRemoveFromTransferList,
-    isListing,
-    isRemoving,
-  } = useTransferActions();
-
-  const formatCurrency = (value: string | number) => {
-    const num = typeof value === "string" ? parseFloat(value) : value;
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "EUR",
-      maximumFractionDigits: 0,
-    }).format(num);
-  };
-
-  const getPositionColor = (pos: string) => {
-    switch (pos) {
-      case "GK":
-        return "bg-yellow-600";
-      case "DEF":
-        return "bg-blue-600";
-      case "MID":
-        return "bg-green-600";
-      case "ATT":
-        return "bg-red-600";
-      default:
-        return "bg-gray-600";
-    }
-  };
+  const listMutation = useListPlayerMutation();
+  const unlistMutation = useUnlistPlayerMutation();
 
   const handleSubmitTransfer = () => {
     const price =
       typeof askingPrice === "string" ? parseFloat(askingPrice) : askingPrice;
-    handleListForTransfer(player.id, price);
-    setShowTransferModal(false);
+    listMutation.mutate(
+      { playerId: player.id, price },
+      { onSuccess: () => setShowTransferModal(false) }
+    );
   };
 
   return (
     <>
-      <div className="bg-slate-800 rounded-lg overflow-hidden border border-slate-700 shadow-md hover:shadow-xl transition-shadow relative">
+      <div
+        className="bg-slate-800 rounded-lg overflow-hidden border border-slate-700 shadow-md hover:shadow-xl transition-shadow relative"
+        data-testid="player-card"
+      >
         {player.isOnTransferList && (
           <div className="absolute top-2 right-2 bg-yellow-500 text-black text-xs font-bold px-2 py-1 rounded-full z-10">
             For Sale: {formatCurrency(player.askingPrice || 0)}
@@ -95,11 +73,12 @@ export const PlayerCard = ({ player }: PlayerCardProps) => {
 
           {player.isOnTransferList ? (
             <button
-              onClick={() => handleRemoveFromTransferList(player.id)}
-              disabled={isRemoving}
+              onClick={() => unlistMutation.mutate(player.id)}
+              disabled={unlistMutation.isPending}
               className="w-full py-2 bg-red-900/50 hover:bg-red-900 disabled:opacity-50 text-red-200 border border-red-800 rounded transition-colors flex items-center justify-center gap-2"
+              data-testid="remove-listing-btn"
             >
-              {isRemoving ? (
+              {unlistMutation.isPending ? (
                 <Loader2 className="animate-spin w-4 h-4" />
               ) : (
                 <>
@@ -111,6 +90,7 @@ export const PlayerCard = ({ player }: PlayerCardProps) => {
             <button
               onClick={() => setShowTransferModal(true)}
               className="w-full py-2 bg-slate-700 hover:bg-slate-600 text-white rounded transition-colors flex items-center justify-center gap-2"
+              data-testid="list-player-btn"
             >
               <DollarSign size={16} /> List for Transfer
             </button>
@@ -153,10 +133,11 @@ export const PlayerCard = ({ player }: PlayerCardProps) => {
               </button>
               <button
                 onClick={handleSubmitTransfer}
-                disabled={isListing}
+                disabled={listMutation.isPending}
                 className="px-4 py-2 bg-green-600 disabled:opacity-50 text-white rounded hover:bg-green-700 flex items-center gap-2"
+                data-testid="confirm-listing-btn"
               >
-                {isListing ? (
+                {listMutation.isPending ? (
                   <Loader2 className="animate-spin w-4 h-4" />
                 ) : (
                   "Confirm Listing"

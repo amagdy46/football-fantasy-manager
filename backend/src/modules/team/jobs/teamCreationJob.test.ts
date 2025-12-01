@@ -63,7 +63,7 @@ describe("Team Creation Worker Logic", () => {
 
     const jobMock = {
       data: { userId: user.id, email: user.email },
-    };
+    } as any;
 
     const result = await teamCreationProcessor(jobMock);
 

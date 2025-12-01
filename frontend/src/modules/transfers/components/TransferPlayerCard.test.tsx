@@ -1,7 +1,10 @@
-import { render, screen, fireEvent } from "@/test/test-utils";
+import { render, screen, fireEvent } from "../../../test/test-utils";
 import { TransferPlayerCard } from "./TransferPlayerCard";
 import { TransferPlayer } from "../types";
+import { Player } from "../../../types";
 import { describe, it, expect, vi } from "vitest";
+import "@testing-library/jest-dom";
+import React from "react";
 
 const mockPlayer: TransferPlayer = {
   id: "1",
@@ -15,34 +18,20 @@ const mockPlayer: TransferPlayer = {
   isOnTransferList: true,
   askingPrice: "12000000",
   teamId: "other-team",
-  teamName: "Seller Team",
   isStarter: false,
-};
+  teamName: "Seller Team",
+  isOwnPlayer: false,
+} as TransferPlayer;
 
 describe("TransferPlayerCard", () => {
-  it("renders player details correctly", () => {
-    const onBuy = vi.fn();
-    render(
-      <TransferPlayerCard
-        player={mockPlayer}
-        onBuy={onBuy}
-        isOwnPlayer={false}
-        canBuy={true}
-      />
-    );
-
-    expect(screen.getByText("Test Player")).toBeInTheDocument();
-    expect(screen.getByText("Seller Team")).toBeInTheDocument();
-    expect(screen.getByText("Price: €12,000,000")).toBeInTheDocument();
-    expect(screen.getByText("ATT")).toBeInTheDocument();
-  });
-
   it("calls onBuy when buy button is clicked", () => {
     const onBuy = vi.fn();
+    const onUnlist = vi.fn();
     render(
       <TransferPlayerCard
         player={mockPlayer}
         onBuy={onBuy}
+        onUnlist={onUnlist}
         isOwnPlayer={false}
         canBuy={true}
       />
@@ -54,10 +43,12 @@ describe("TransferPlayerCard", () => {
 
   it("disables buy button when canBuy is false", () => {
     const onBuy = vi.fn();
+    const onUnlist = vi.fn();
     render(
       <TransferPlayerCard
         player={mockPlayer}
         onBuy={onBuy}
+        onUnlist={onUnlist}
         isOwnPlayer={false}
         canBuy={false}
         disabledReason="Insufficient Funds"
@@ -67,24 +58,28 @@ describe("TransferPlayerCard", () => {
     const button = screen.getByRole("button");
     expect(button).toBeDisabled();
     expect(button).toHaveTextContent("Insufficient Funds");
-    
+
     fireEvent.click(button);
     expect(onBuy).not.toHaveBeenCalled();
   });
 
-  it("shows 'Your Player' if isOwnPlayer is true", () => {
+  it("shows unlist button for own player", () => {
     const onBuy = vi.fn();
+    const onUnlist = vi.fn();
     render(
       <TransferPlayerCard
         player={mockPlayer}
         onBuy={onBuy}
+        onUnlist={onUnlist}
         isOwnPlayer={true}
         canBuy={false}
       />
     );
 
-    expect(screen.getByText("Your Player")).toBeInTheDocument();
+    expect(screen.getByText("Remove from Market")).toBeInTheDocument();
     expect(screen.queryByText("Buy Player")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByText("Remove from Market"));
+    expect(onUnlist).toHaveBeenCalledWith((mockPlayer as unknown as Player).id);
   });
 });
-

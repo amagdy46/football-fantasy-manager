@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Player } from "../types";
 import { PlayerDetailModal } from "./PlayerDetailModal";
-import { useTransferActions } from "../hooks/useTransferActions";
+import { PlayerDot } from "./PlayerDot";
+import { useListPlayerMutation, useUnlistPlayerMutation } from "../mutations";
 
 interface SoccerPitchProps {
   players: Player[];
@@ -9,40 +10,13 @@ interface SoccerPitchProps {
 
 export const SoccerPitch = ({ players }: SoccerPitchProps) => {
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
-  const {
-    handleListForTransfer,
-    handleRemoveFromTransferList,
-    isListing,
-    isRemoving,
-  } = useTransferActions();
+  const listMutation = useListPlayerMutation();
+  const unlistMutation = useUnlistPlayerMutation();
 
-  // Group players by position for placement
   const gk = players.filter((p) => p.position === "GK");
   const def = players.filter((p) => p.position === "DEF");
   const mid = players.filter((p) => p.position === "MID");
   const att = players.filter((p) => p.position === "ATT");
-
-  const PlayerDot = ({ player }: { player: Player }) => (
-    <div
-      onClick={() => setSelectedPlayer(player)}
-      className="flex flex-col items-center justify-center w-20 md:w-24 transform transition-transform hover:scale-110 cursor-pointer group z-10 relative"
-    >
-      <div
-        className={`
-        w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center text-xs md:text-sm font-bold border-2 border-white shadow-lg
-        ${player.position === "GK" ? "bg-yellow-500" : ""}
-        ${player.position === "DEF" ? "bg-blue-600" : ""}
-        ${player.position === "MID" ? "bg-green-600" : ""}
-        ${player.position === "ATT" ? "bg-red-600" : ""}
-      `}
-      >
-        {player.name.substring(0, 2).toUpperCase()}
-      </div>
-      <div className="bg-slate-900/90 text-white text-[10px] md:text-xs px-2 py-0.5 rounded mt-1 truncate max-w-full text-center border border-slate-700 shadow-md backdrop-blur-sm">
-        {player.name}
-      </div>
-    </div>
-  );
 
   return (
     <>
@@ -84,28 +58,28 @@ export const SoccerPitch = ({ players }: SoccerPitchProps) => {
           {/* Attackers (Top) */}
           <div className="flex justify-center items-center gap-4 md:gap-16 pt-4 md:pt-8">
             {att.map((p) => (
-              <PlayerDot key={p.id} player={p} />
+              <PlayerDot key={p.id} player={p} onClick={setSelectedPlayer} />
             ))}
           </div>
 
           {/* Midfielders */}
           <div className="flex justify-center items-center gap-2 md:gap-12">
             {mid.map((p) => (
-              <PlayerDot key={p.id} player={p} />
+              <PlayerDot key={p.id} player={p} onClick={setSelectedPlayer} />
             ))}
           </div>
 
           {/* Defenders */}
           <div className="flex justify-center items-center gap-2 md:gap-12">
             {def.map((p) => (
-              <PlayerDot key={p.id} player={p} />
+              <PlayerDot key={p.id} player={p} onClick={setSelectedPlayer} />
             ))}
           </div>
 
           {/* Goalkeeper (Bottom) */}
           <div className="flex justify-center items-end pb-2">
             {gk.map((p) => (
-              <PlayerDot key={p.id} player={p} />
+              <PlayerDot key={p.id} player={p} onClick={setSelectedPlayer} />
             ))}
           </div>
         </div>
@@ -115,10 +89,19 @@ export const SoccerPitch = ({ players }: SoccerPitchProps) => {
         <PlayerDetailModal
           player={selectedPlayer}
           onClose={() => setSelectedPlayer(null)}
-          onListForTransfer={handleListForTransfer}
-          onRemoveFromTransferList={handleRemoveFromTransferList}
-          isListing={isListing}
-          isRemoving={isRemoving}
+          onListForTransfer={(playerId, price) =>
+            listMutation.mutate(
+              { playerId, price },
+              { onSuccess: () => setSelectedPlayer(null) }
+            )
+          }
+          onRemoveFromTransferList={(playerId) =>
+            unlistMutation.mutate(playerId, {
+              onSuccess: () => setSelectedPlayer(null),
+            })
+          }
+          isListing={listMutation.isPending}
+          isRemoving={unlistMutation.isPending}
         />
       )}
     </>

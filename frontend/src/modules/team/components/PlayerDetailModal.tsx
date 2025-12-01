@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import { X, DollarSign } from "lucide-react";
 import { Player } from "../types";
 import { useOnClickOutside } from "usehooks-ts";
+import { formatCurrency, positionColors } from "@/lib/utils";
 
 interface PlayerDetailModalProps {
   player: Player;
@@ -25,15 +26,6 @@ export const PlayerDetailModal = ({
 
   useOnClickOutside(modalRef, onClose);
 
-  const formatCurrency = (value: string | number) => {
-    const num = typeof value === "string" ? parseFloat(value) : value;
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "EUR",
-      maximumFractionDigits: 0,
-    }).format(num);
-  };
-
   const handleList = () => {
     onListForTransfer(player.id, Number(askingPrice));
   };
@@ -54,12 +46,9 @@ export const PlayerDetailModal = ({
         <div className="p-6">
           <div className="flex items-center gap-4 mb-6">
             <div
-              className={`w-16 h-16 rounded-full flex items-center justify-center text-xl font-bold border-2 border-white shadow-lg
-              ${player.position === "GK" ? "bg-yellow-500" : ""}
-              ${player.position === "DEF" ? "bg-blue-600" : ""}
-              ${player.position === "MID" ? "bg-green-600" : ""}
-              ${player.position === "ATT" ? "bg-red-600" : ""}
-            `}
+              className={`w-16 h-16 rounded-full flex items-center justify-center text-xl font-bold border-2 border-white shadow-lg ${
+                positionColors[player.position]
+              }`}
             >
               {player.position}
             </div>

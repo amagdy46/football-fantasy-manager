@@ -1,47 +1,31 @@
-import { DollarSign, ShoppingCart } from "lucide-react";
+import { DollarSign, ShoppingCart, Trash2, Loader2 } from "lucide-react";
 import { TransferPlayer } from "../types";
+import { formatCurrency, getPositionColor } from "@/lib/utils";
 
 interface TransferPlayerCardProps {
   player: TransferPlayer;
   onBuy: (player: TransferPlayer) => void;
+  onUnlist: (playerId: string) => void;
   isOwnPlayer: boolean;
   canBuy: boolean;
   disabledReason?: string;
+  isUnlisting?: boolean;
 }
 
 export const TransferPlayerCard = ({
   player,
   onBuy,
+  onUnlist,
   isOwnPlayer,
   canBuy,
   disabledReason,
+  isUnlisting,
 }: TransferPlayerCardProps) => {
-  const formatCurrency = (value: string | number) => {
-    const num = typeof value === "string" ? parseFloat(value) : value;
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "EUR",
-      maximumFractionDigits: 0,
-    }).format(num);
-  };
-
-  const getPositionColor = (pos: string) => {
-    switch (pos) {
-      case "GK":
-        return "bg-yellow-600";
-      case "DEF":
-        return "bg-blue-600";
-      case "MID":
-        return "bg-green-600";
-      case "ATT":
-        return "bg-red-600";
-      default:
-        return "bg-gray-600";
-    }
-  };
-
   return (
-    <div className="bg-slate-800 rounded-lg overflow-hidden border border-slate-700 shadow-md hover:shadow-xl transition-shadow relative">
+    <div
+      className="bg-slate-800 rounded-lg overflow-hidden border border-slate-700 shadow-md hover:shadow-xl transition-shadow relative"
+      data-testid="transfer-player-card"
+    >
       <div className="absolute top-2 right-2 bg-yellow-500 text-black text-xs font-bold px-2 py-1 rounded-full z-10">
         Price: {formatCurrency(player.askingPrice || 0)}
       </div>
@@ -86,9 +70,20 @@ export const TransferPlayerCard = ({
         </div>
 
         {isOwnPlayer ? (
-          <div className="w-full py-2 bg-slate-700/50 text-slate-400 border border-slate-700 rounded text-center text-sm">
-            Your Player
-          </div>
+          <button
+            onClick={() => onUnlist(player.id)}
+            disabled={isUnlisting}
+            className="w-full py-2 bg-red-900/50 hover:bg-red-900 disabled:opacity-50 text-red-200 border border-red-800 rounded transition-colors flex items-center justify-center gap-2"
+            data-testid="unlist-player-btn"
+          >
+            {isUnlisting ? (
+              <Loader2 className="animate-spin w-4 h-4" />
+            ) : (
+              <>
+                <Trash2 size={16} /> Remove from Market
+              </>
+            )}
+          </button>
         ) : (
           <button
             onClick={() => onBuy(player)}
@@ -98,6 +93,7 @@ export const TransferPlayerCard = ({
                 ? "bg-green-600 hover:bg-green-700 text-white"
                 : "bg-slate-700 text-slate-400 cursor-not-allowed"
             }`}
+            data-testid="buy-player-btn"
           >
             {canBuy ? (
               <>

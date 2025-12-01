@@ -2,6 +2,8 @@ import { describe, it, expect } from "vitest";
 import { render, screen } from "../../../test/test-utils";
 import { SoccerPitch } from "./SoccerPitch";
 import { Player } from "../types";
+import "@testing-library/jest-dom";
+import React from "react";
 
 describe("SoccerPitch", () => {
   const createMockPlayer = (

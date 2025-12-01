@@ -1,10 +1,5 @@
-/* eslint-disable react-refresh/only-export-components */
-import React, { createContext, useState, useEffect } from "react";
-
-interface User {
-  id: string;
-  email: string;
-}
+import React, { createContext, useState, useCallback } from "react";
+import type { User } from "@/types";
 
 interface AuthContextType {
   user: User | null;
@@ -14,44 +9,53 @@ interface AuthContextType {
   logout: () => void;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const AuthContext = createContext<AuthContextType | undefined>(
   undefined
 );
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(
-    localStorage.getItem("token")
-  );
+const getInitialState = () => {
+  const storedToken = localStorage.getItem("token");
+  const storedUser = localStorage.getItem("user");
 
-  useEffect(() => {
-    // Check if token exists on mount
-    const storedToken = localStorage.getItem("token");
-    const storedUser = localStorage.getItem("user");
-
-    if (storedToken && storedUser) {
-      setToken(storedToken);
-      setUser(JSON.parse(storedUser));
+  if (storedToken && storedUser) {
+    try {
+      return {
+        token: storedToken,
+        user: JSON.parse(storedUser) as User,
+      };
+    } catch {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
     }
-  }, []);
+  }
+  return { token: null, user: null };
+};
 
-  const login = (newToken: string, newUser: User) => {
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [authState, setAuthState] = useState(getInitialState);
+
+  const login = useCallback((newToken: string, newUser: User) => {
     localStorage.setItem("token", newToken);
     localStorage.setItem("user", JSON.stringify(newUser));
-    setToken(newToken);
-    setUser(newUser);
-  };
+    setAuthState({ token: newToken, user: newUser });
+  }, []);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-    setToken(null);
-    setUser(null);
-  };
+    setAuthState({ token: null, user: null });
+  }, []);
 
   return (
     <AuthContext.Provider
-      value={{ user, token, isAuthenticated: !!token, login, logout }}
+      value={{
+        user: authState.user,
+        token: authState.token,
+        isAuthenticated: !!authState.token,
+        login,
+        logout,
+      }}
     >
       {children}
     </AuthContext.Provider>

@@ -28,3 +28,8 @@ export interface Team {
   isReady: boolean;
   players: Player[];
 }
+
+export interface TeamStatusResponse {
+  isReady: boolean;
+  teamId?: string;
+}

@@ -1,13 +1,8 @@
-import axios from "axios";
 import prisma from "../../../config/database";
 import seedData from "../../../data/seed-players.json";
-import { Position, Prisma } from "@prisma/client";
+import { Position, Prisma } from "@/generated/prisma/client";
 
-const API_KEY = process.env.FOOTBALL_DATA_API_KEY;
-const API_URL = "https://api.football-data.org/v4";
-const COMPETITION_ID = "BL1"; // Bundesliga as default example
-
-interface ApiPlayer {
+interface SeedPlayer {
   id: number;
   name: string;
   position: string;
@@ -58,7 +53,6 @@ export const calculateMarketValue = (
 export const generateStats = (position: Position, marketValue: number) => {
   let goals = 0;
   let assists = 0;
-  // Adjusted threshold since values are lower now (< 5M)
   const isHighValue = marketValue > 2500000;
 
   switch (position) {
@@ -82,10 +76,10 @@ export const generateStats = (position: Position, marketValue: number) => {
   return { goals, assists };
 };
 
-// Map API position string to Enum
-export const mapPosition = (apiPos: string | null): Position => {
-  if (!apiPos) return "MID"; // Default fallback
-  const p = apiPos.toLowerCase();
+// Map position string to Enum
+export const mapPosition = (pos: string | null): Position => {
+  if (!pos) return "MID";
+  const p = pos.toLowerCase();
   if (p.includes("goalkeeper")) return "GK";
   if (p.includes("defence") || p.includes("defender") || p.includes("back"))
     return "DEF";
@@ -104,45 +98,10 @@ export const calculateAge = (dob: string): number => {
 
 export class PlayerPoolService {
   static async seedPlayers(): Promise<void> {
-    console.log("Starting player pool seeding...");
+    console.log("Starting player pool seeding from JSON data...");
 
-    let players: ApiPlayer[] = [];
+    const players = seedData as SeedPlayer[];
 
-    // 1. Try fetching from API
-    if (API_KEY) {
-      try {
-        // Fetch teams first to get squad
-        const response = await axios.get(
-          `${API_URL}/competitions/${COMPETITION_ID}/teams`,
-          {
-            headers: { "X-Auth-Token": API_KEY },
-          }
-        );
-
-        const teams = response.data.teams;
-        for (const team of teams) {
-          if (team.squad) {
-            players.push(
-              ...team.squad.map((p: any) => ({
-                ...p,
-                team: { name: team.name },
-              }))
-            );
-          }
-        }
-      } catch (error) {
-        console.error("API fetch failed, falling back to JSON:", error);
-      }
-    } else {
-      console.log("No API key found. Using fallback JSON data.");
-    }
-
-    // 2. Fallback to JSON if API failed or returned 0
-    if (players.length === 0) {
-      players = seedData as ApiPlayer[];
-    }
-
-    // 3. Process and Save
     let successCount = 0;
     for (const p of players) {
       try {
@@ -175,13 +134,11 @@ export class PlayerPoolService {
         console.error(`Failed to seed player ${p.name}:`, err);
       }
     }
+
+    console.log(`Seeded ${successCount} players from JSON data.`);
   }
 
   static async getRandomPlayersByPosition(position: Position, count: number) {
-    // Prisma doesn't strictly support ORDER BY RANDOM() easily in typed client without raw query
-    // So we fetch IDs first or use raw query. Raw query is faster for random.
-
-    // Using raw query for postgres random selection
     const result = await prisma.$queryRaw<any[]>`
       SELECT * FROM "PlayerPool"
       WHERE position = ${position}::"Position"
@@ -189,8 +146,6 @@ export class PlayerPoolService {
       LIMIT ${count};
     `;
 
-    // Map raw result back to ensure decimals are handled if needed,
-    // though Prisma raw returns JS objects.
     return result;
   }
 }

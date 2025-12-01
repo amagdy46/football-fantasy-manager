@@ -25,7 +25,10 @@ const DashboardPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white p-4 md:p-8">
+    <div
+      className="min-h-screen bg-slate-900 text-white p-4 md:p-8"
+      data-testid="team-ready"
+    >
       <div className="max-w-7xl mx-auto">
         <TeamHeader team={team} />
 

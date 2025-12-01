@@ -1,7 +1,7 @@
 import React from "react";
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { render, screen, renderHook, act } from "@testing-library/react";
-import "@testing-library/jest-dom";
+import { render, screen, act } from "../../../test/test-utils";
+import { renderHook } from "@testing-library/react";
 import { AuthProvider } from "./AuthContext";
 import { useAuth } from "../hooks/useAuth";
 

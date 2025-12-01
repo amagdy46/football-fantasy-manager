@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -10,9 +11,6 @@ import { LoadingPage, DashboardPage } from "./modules/team/pages";
 import { TransferMarketPage } from "./modules/transfers";
 import { Toaster } from "sonner";
 
-const queryClient = new QueryClient();
-
-// Protected Route Wrapper
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated } = useAuth();
   if (!isAuthenticated) {
@@ -21,40 +19,48 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
+function AppRoutes() {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/auth" element={<AuthPage />} />
+        <Route
+          path="/loading"
+          element={
+            <ProtectedRoute>
+              <LoadingPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <DashboardPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/transfers"
+          element={
+            <ProtectedRoute>
+              <TransferMarketPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/" element={<Navigate to="/loading" replace />} />
+      </Routes>
+    </Router>
+  );
+}
+
 function App() {
+  const [queryClient] = useState(() => new QueryClient());
+
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <Router>
-          <Routes>
-            <Route path="/auth" element={<AuthPage />} />
-            <Route
-              path="/loading"
-              element={
-                <ProtectedRoute>
-                  <LoadingPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute>
-                  <DashboardPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/transfers"
-              element={
-                <ProtectedRoute>
-                  <TransferMarketPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route path="/" element={<Navigate to="/loading" replace />} />
-          </Routes>
-        </Router>
+        <AppRoutes />
         <Toaster position="top-right" richColors />
       </AuthProvider>
     </QueryClientProvider>

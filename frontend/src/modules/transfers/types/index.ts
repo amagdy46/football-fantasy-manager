@@ -1,7 +1,8 @@
-import { Player } from "@/modules/team/types";
+import { Player } from "@/types";
 
 export interface TransferPlayer extends Player {
   teamName: string;
+  isOwnPlayer?: boolean;
 }
 
 export interface TransferFilters {

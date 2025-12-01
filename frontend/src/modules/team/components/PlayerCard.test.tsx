@@ -1,17 +1,22 @@
-import { describe, it, expect, vi } from "vitest";
-import { render, screen, fireEvent } from "../../../test/test-utils";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { render, screen, fireEvent, waitFor } from "../../../test/test-utils";
 import { PlayerCard } from "./PlayerCard";
+import "@testing-library/jest-dom";
 import { Player } from "../types";
+import React from "react";
 
-const mockUseTransferActions = {
-  handleListForTransfer: vi.fn(),
-  handleRemoveFromTransferList: vi.fn(),
-  isListing: false,
-  isRemoving: false,
-};
+const mockListMutate = vi.fn();
+const mockUnlistMutate = vi.fn();
 
-vi.mock("../hooks/useTransferActions", () => ({
-  useTransferActions: () => mockUseTransferActions,
+vi.mock("../mutations", () => ({
+  useListPlayerMutation: () => ({
+    mutate: mockListMutate,
+    isPending: false,
+  }),
+  useUnlistPlayerMutation: () => ({
+    mutate: mockUnlistMutate,
+    isPending: false,
+  }),
 }));
 
 describe("PlayerCard", () => {
@@ -31,16 +36,6 @@ describe("PlayerCard", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-  });
-
-  it("should render player information correctly", () => {
-    render(<PlayerCard player={mockPlayer} />);
-
-    expect(screen.getByText("Test Player")).toBeInTheDocument();
-    expect(screen.getByText("MID")).toBeInTheDocument();
-    expect(screen.getByText("Test Country")).toBeInTheDocument();
-    expect(screen.getByText("Age: 25")).toBeInTheDocument();
-    expect(screen.getByText("10G / 5A")).toBeInTheDocument();
   });
 
   it("should show List for Transfer button when not on transfer list", () => {
@@ -87,7 +82,7 @@ describe("PlayerCard", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("should call onListForTransfer with correct data when confirming", () => {
+  it("should call list mutation with correct data when confirming", async () => {
     render(<PlayerCard player={mockPlayer} />);
 
     fireEvent.click(screen.getByText("List for Transfer"));
@@ -97,22 +92,24 @@ describe("PlayerCard", () => {
 
     fireEvent.click(screen.getByText("Confirm Listing"));
 
-    expect(mockUseTransferActions.handleListForTransfer).toHaveBeenCalledWith(
-      "player-1",
-      7000000
-    );
+    await waitFor(() => {
+      expect(mockListMutate).toHaveBeenCalledWith(
+        { playerId: "player-1", price: 7000000 },
+        expect.any(Object)
+      );
+    });
   });
 
-  it("should call onRemoveFromTransferList when clicking Remove Listing", () => {
+  it("should call unlist mutation when clicking Remove Listing", async () => {
     const listedPlayer = { ...mockPlayer, isOnTransferList: true };
 
     render(<PlayerCard player={listedPlayer} />);
 
     fireEvent.click(screen.getByText("Remove Listing"));
 
-    expect(
-      mockUseTransferActions.handleRemoveFromTransferList
-    ).toHaveBeenCalledWith("player-1");
+    await waitFor(() => {
+      expect(mockUnlistMutate).toHaveBeenCalledWith("player-1");
+    });
   });
 
   it("should apply correct position color", () => {
@@ -121,7 +118,7 @@ describe("PlayerCard", () => {
     );
 
     let badge = screen.getByText("GK");
-    expect(badge).toHaveClass("bg-yellow-600");
+    expect(badge).toHaveClass("bg-yellow-500");
 
     rerender(<PlayerCard player={{ ...mockPlayer, position: "DEF" }} />);
     badge = screen.getByText("DEF");

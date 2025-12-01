@@ -1,16 +1,16 @@
-import { Queue, Worker } from "bullmq";
+import { Queue, Worker, Job } from "bullmq";
 import { PlayerPoolService } from "@/modules/team/services/playerPoolService";
 import prisma from "@/config/database";
 import redisConfig from "@/config/redis";
-import { Position } from "@prisma/client";
+import { PoolPlayer, TeamCreationJobData } from "../types";
 
 const QUEUE_NAME = "team-creation";
 
-export const teamCreationQueue = new Queue(QUEUE_NAME, {
+export const teamCreationQueue = new Queue<TeamCreationJobData>(QUEUE_NAME, {
   connection: redisConfig.connection,
 });
 
-export const teamCreationProcessor = async (job: any) => {
+export const teamCreationProcessor = async (job: Job<TeamCreationJobData>) => {
   const { userId, email } = job.data;
   console.log(`Processing team creation for user ${email} (${userId})`);
 
@@ -24,51 +24,49 @@ export const teamCreationProcessor = async (job: any) => {
       },
     });
 
-    const goalkeepers = await PlayerPoolService.getRandomPlayersByPosition(
+    const goalkeepers = (await PlayerPoolService.getRandomPlayersByPosition(
       "GK",
       3
-    );
-    const defenders = await PlayerPoolService.getRandomPlayersByPosition(
+    )) as PoolPlayer[];
+    const defenders = (await PlayerPoolService.getRandomPlayersByPosition(
       "DEF",
       6
-    );
-    const midfielders = await PlayerPoolService.getRandomPlayersByPosition(
+    )) as PoolPlayer[];
+    const midfielders = (await PlayerPoolService.getRandomPlayersByPosition(
       "MID",
       6
-    );
-    const attackers = await PlayerPoolService.getRandomPlayersByPosition(
+    )) as PoolPlayer[];
+    const attackers = (await PlayerPoolService.getRandomPlayersByPosition(
       "ATT",
       5
-    );
+    )) as PoolPlayer[];
 
-    const allPoolPlayers = [
+    const allPoolPlayers: PoolPlayer[] = [
       ...goalkeepers,
       ...defenders,
       ...midfielders,
       ...attackers,
     ];
 
-    // Select Starters (1 GK, 4 DEF, 4 MID, 2 ATT) = 11 players
-    // Logic: Pick the ones with highest value as default starters
-    const sortByValue = (a: any, b: any) =>
+    const sortByValue = (a: PoolPlayer, b: PoolPlayer) =>
       Number(b.marketValue) - Number(a.marketValue);
 
-    const startingGK = goalkeepers
+    const startingGK = [...goalkeepers]
       .sort(sortByValue)
       .slice(0, 1)
-      .map((p: any) => p.id);
-    const startingDEF = defenders
+      .map((p) => p.id);
+    const startingDEF = [...defenders]
       .sort(sortByValue)
       .slice(0, 4)
-      .map((p: any) => p.id);
-    const startingMID = midfielders
+      .map((p) => p.id);
+    const startingMID = [...midfielders]
       .sort(sortByValue)
       .slice(0, 4)
-      .map((p: any) => p.id);
-    const startingATT = attackers
+      .map((p) => p.id);
+    const startingATT = [...attackers]
       .sort(sortByValue)
       .slice(0, 2)
-      .map((p: any) => p.id);
+      .map((p) => p.id);
 
     const starterIds = new Set([
       ...startingGK,
@@ -77,25 +75,21 @@ export const teamCreationProcessor = async (job: any) => {
       ...startingATT,
     ]);
 
-    // 3. Create Player records assigned to the team
-    for (const poolPlayer of allPoolPlayers) {
-      await prisma.player.create({
-        data: {
-          teamId: team.id,
-          name: poolPlayer.name,
-          position: poolPlayer.position,
-          age: poolPlayer.age,
-          country: poolPlayer.country,
-          value: poolPlayer.marketValue,
-          goals: poolPlayer.goals,
-          assists: poolPlayer.assists,
-          isOnTransferList: false,
-          isStarter: starterIds.has(poolPlayer.id),
-        },
-      });
-    }
+    await prisma.player.createMany({
+      data: allPoolPlayers.map((poolPlayer) => ({
+        teamId: team.id,
+        name: poolPlayer.name,
+        position: poolPlayer.position,
+        age: poolPlayer.age,
+        country: poolPlayer.country,
+        value: poolPlayer.marketValue,
+        goals: poolPlayer.goals,
+        assists: poolPlayer.assists,
+        isOnTransferList: false,
+        isStarter: starterIds.has(poolPlayer.id),
+      })),
+    });
 
-    // 4. Set team isReady=true
     await prisma.team.update({
       where: { id: team.id },
       data: { isReady: true },

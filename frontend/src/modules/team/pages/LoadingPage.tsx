@@ -1,15 +1,13 @@
 import { Loader2, AlertCircle } from "lucide-react";
-import { useLoadingDots } from "../../common/hooks";
-import { useTeamStatusPolling } from "../hooks";
+import { useTeamStatusQuery } from "../queries";
 
 export default function LoadingPage() {
-  const dots = useLoadingDots();
-  const { error, retry } = useTeamStatusPolling();
+  const { isError, refetch } = useTeamStatusQuery({ polling: true });
 
   return (
     <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-white p-4">
       <div className="bg-slate-900 border border-slate-800 p-8 rounded-xl shadow-2xl flex flex-col items-center max-w-md w-full text-center">
-        {error ? (
+        {isError ? (
           <>
             <div className="relative mb-6">
               <div className="absolute inset-0 bg-red-500/20 rounded-full blur-xl"></div>
@@ -18,9 +16,11 @@ export default function LoadingPage() {
             <h2 className="text-2xl font-bold mb-2 text-white">
               Scouting Delayed
             </h2>
-            <p className="text-slate-400 mb-6">{error}</p>
+            <p className="text-slate-400 mb-6">
+              Unable to connect to the scouting server. Please try again.
+            </p>
             <button
-              onClick={retry}
+              onClick={() => refetch()}
               className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg transition-colors"
             >
               Try Again
@@ -33,7 +33,7 @@ export default function LoadingPage() {
               <Loader2 className="w-16 h-16 text-green-500 animate-spin relative z-10" />
             </div>
 
-            <h2 className="text-2xl font-bold mb-2">Scouting Players{dots}</h2>
+            <h2 className="text-2xl font-bold mb-2">Scouting Players</h2>
             <p className="text-slate-400">
               Our scouts are traveling the world to assemble your starting
               squad. This usually takes a few seconds.

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Pencil, Check, X } from "lucide-react";
 import { Team } from "../types";
 import { useUpdateTeamNameMutation } from "../mutations";
+import { formatCurrency } from "@/lib/utils";
 
 interface TeamHeaderProps {
   team: Team;
@@ -18,9 +19,6 @@ export const TeamHeader = ({ team }: TeamHeaderProps) => {
       onSuccess: () => {
         setIsEditing(false);
       },
-      onError: (error) => {
-        console.error("Failed to update team name", error);
-      },
     });
   };
 
@@ -29,16 +27,6 @@ export const TeamHeader = ({ team }: TeamHeaderProps) => {
     setIsEditing(false);
   };
 
-  const formatCurrency = (value: string | number) => {
-    const num = typeof value === "string" ? parseFloat(value) : value;
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "EUR",
-      maximumFractionDigits: 0,
-    }).format(num);
-  };
-
-  // Calculate total value
   const totalValue = team.players.reduce(
     (sum, player) => sum + parseFloat(player.value),
     0
@@ -93,7 +81,10 @@ export const TeamHeader = ({ team }: TeamHeaderProps) => {
             <h2 className="text-slate-400 text-sm uppercase tracking-wider mb-1">
               Budget
             </h2>
-            <p className="text-2xl font-bold text-green-400">
+            <p
+              className="text-2xl font-bold text-green-400"
+              data-testid="team-budget"
+            >
               {formatCurrency(team.budget)}
             </p>
           </div>
@@ -101,8 +92,22 @@ export const TeamHeader = ({ team }: TeamHeaderProps) => {
             <h2 className="text-slate-400 text-sm uppercase tracking-wider mb-1">
               Team Value
             </h2>
-            <p className="text-2xl font-bold text-blue-400">
+            <p
+              className="text-2xl font-bold text-blue-400"
+              data-testid="team-value"
+            >
               {formatCurrency(totalValue)}
+            </p>
+          </div>
+          <div>
+            <h2 className="text-slate-400 text-sm uppercase tracking-wider mb-1">
+              Players
+            </h2>
+            <p
+              className="text-2xl font-bold text-white"
+              data-testid="team-player-count"
+            >
+              {team.players.length}
             </p>
           </div>
         </div>

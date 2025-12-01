@@ -1,5 +1,4 @@
-// Controllers
 export * from "./controllers";
-
-// Routes
 export * from "./routes";
+export * from "./services";
+export * from "./types";

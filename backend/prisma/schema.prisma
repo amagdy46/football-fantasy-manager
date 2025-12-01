@@ -1,14 +1,10 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
-  provider      = "prisma-client-js"
-  binaryTargets = ["native", "debian-openssl-3.0.x"]
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -23,26 +19,18 @@ model User {
 model Team {
   id        String   @id @default(uuid())
   userId    String   @unique
-  user      User     @relation(fields: [userId], references: [id])
   name      String   @default("My Team")
   budget    Decimal  @default(5000000)
   isReady   Boolean  @default(false)
-  players   Player[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-}
-
-enum Position {
-  GK
-  DEF
-  MID
-  ATT
+  players   Player[]
+  user      User     @relation(fields: [userId], references: [id])
 }
 
 model Player {
   id               String   @id @default(uuid())
   teamId           String
-  team             Team     @relation(fields: [teamId], references: [id])
   name             String
   position         Position
   age              Int
@@ -52,22 +40,30 @@ model Player {
   assists          Int      @default(0)
   isOnTransferList Boolean  @default(false)
   askingPrice      Decimal?
-  isStarter        Boolean  @default(false)
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
+  isStarter        Boolean  @default(false)
+  team             Team     @relation(fields: [teamId], references: [id])
 }
 
 model PlayerPool {
   id           String   @id @default(uuid())
-  externalId   String   @unique // API player ID
+  externalId   String   @unique
   name         String
   position     Position
   age          Int
   country      String
-  originalTeam String? // Name of the real-life team
-  imageUrl     String? // URL to player image
+  originalTeam String?
+  imageUrl     String?
   marketValue  Decimal
   goals        Int      @default(0)
   assists      Int      @default(0)
   createdAt    DateTime @default(now())
+}
+
+enum Position {
+  GK
+  DEF
+  MID
+  ATT
 }

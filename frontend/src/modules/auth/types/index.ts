@@ -1,7 +1,6 @@
-export interface User {
-  id: string;
-  email: string;
-}
+import type { User } from "@/types";
+
+export type { User };
 
 export interface AuthContextType {
   user: User | null;
