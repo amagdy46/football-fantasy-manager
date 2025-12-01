@@ -6,7 +6,6 @@ import {
 import prisma from "../config/database";
 import { Prisma, Position } from "@/generated/prisma/client";
 
-// AI Team configurations for a more realistic transfer market
 const AI_TEAMS = [
   { name: "FC Barcelona B", listPercentage: 0.3 },
   { name: "Manchester United Reserves", listPercentage: 0.25 },
@@ -32,7 +31,6 @@ async function createAiTeam(
 ): Promise<void> {
   console.log(`Creating AI team: ${teamName}...`);
 
-  // Create a dummy user for the AI team
   const aiEmail = `ai-${teamName
     .toLowerCase()
     .replace(/\s+/g, "-")}@fantasy.ai`;
@@ -43,55 +41,51 @@ async function createAiTeam(
     aiUser = await prisma.user.create({
       data: {
         email: aiEmail,
-        password: "ai-team-no-login", // AI teams cannot login
+        password: "ai-team-no-login",
       },
     });
   }
 
-  // Check if team already exists
   let team = await prisma.team.findUnique({ where: { userId: aiUser.id } });
 
   if (team) {
     console.log(`  Team ${teamName} already exists, updating players...`);
-    // Delete existing players to refresh
     await prisma.player.deleteMany({ where: { teamId: team.id } });
   } else {
     team = await prisma.team.create({
       data: {
         userId: aiUser.id,
         name: teamName,
-        budget: 10000000, // AI teams have more budget
+        budget: 5000000,
         isReady: true,
       },
     });
   }
 
-  // Get random players for the team
-  const goalkeepers = (await PlayerPoolService.getRandomPlayersByPosition(
+  const goalkeepers = await PlayerPoolService.getRandomPlayersByPosition(
     "GK",
     3
-  )) as PoolPlayer[];
-  const defenders = (await PlayerPoolService.getRandomPlayersByPosition(
+  );
+  const defenders = await PlayerPoolService.getRandomPlayersByPosition(
     "DEF",
     6
-  )) as PoolPlayer[];
-  const midfielders = (await PlayerPoolService.getRandomPlayersByPosition(
+  );
+  const midfielders = await PlayerPoolService.getRandomPlayersByPosition(
     "MID",
     6
-  )) as PoolPlayer[];
-  const attackers = (await PlayerPoolService.getRandomPlayersByPosition(
+  );
+  const attackers = await PlayerPoolService.getRandomPlayersByPosition(
     "ATT",
     5
-  )) as PoolPlayer[];
+  );
 
-  const allPoolPlayers: PoolPlayer[] = [
+  const allPoolPlayers = [
     ...goalkeepers,
     ...defenders,
     ...midfielders,
     ...attackers,
   ];
 
-  // Sort by value to determine starters
   const sortByValue = (a: PoolPlayer, b: PoolPlayer) =>
     Number(b.marketValue) - Number(a.marketValue);
 
@@ -119,7 +113,6 @@ async function createAiTeam(
     ...startingATT,
   ]);
 
-  // Determine which players to list on transfer market (only non-starters)
   const nonStarters = allPoolPlayers.filter((p) => !starterIds.has(p.id));
   const playersToList = Math.floor(nonStarters.length * listPercentage);
   const listedPlayerIds = new Set(
@@ -129,12 +122,10 @@ async function createAiTeam(
       .map((p) => p.id)
   );
 
-  // Create players
   await prisma.player.createMany({
     data: allPoolPlayers.map((poolPlayer) => {
       const isListed = listedPlayerIds.has(poolPlayer.id);
       const baseValue = Number(poolPlayer.marketValue);
-      // Asking price is 90-130% of market value
       const askingPrice = isListed
         ? Math.floor(baseValue * (0.9 + Math.random() * 0.4))
         : null;
@@ -163,16 +154,13 @@ async function createAiTeam(
 
 async function main() {
   try {
-    // 1. Update Player Pool
     await PlayerPoolService.seedPlayers();
 
-    // 2. Update Active Players (in user teams) to match new values
     console.log("\nUpdating active players...");
     const activePlayers = await prisma.player.findMany();
     let updatedCount = 0;
 
     for (const p of activePlayers) {
-      // Recalculate value using the new logic
       const newValue = calculateMarketValue(p.position, p.age);
 
       await prisma.player.update({
@@ -189,13 +177,11 @@ async function main() {
     }
     console.log(`Updated ${updatedCount} active players.`);
 
-    // 3. Create AI teams with players on transfer market
     console.log("\n--- Creating AI Teams for Transfer Market ---");
     for (const aiTeam of AI_TEAMS) {
       await createAiTeam(aiTeam.name, aiTeam.listPercentage);
     }
 
-    // 4. Summary of transfer market
     console.log("\n--- Transfer Market Summary ---");
     const listedPlayers = await prisma.player.findMany({
       where: { isOnTransferList: true },
@@ -229,7 +215,6 @@ async function main() {
       `Price range: €${priceRange.min.toLocaleString()} - €${priceRange.max.toLocaleString()}`
     );
 
-    // Test random selection
     console.log("\nTesting Random Selection:");
     const attackers = await PlayerPoolService.getRandomPlayersByPosition(
       "ATT",

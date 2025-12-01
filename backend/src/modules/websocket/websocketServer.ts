@@ -71,7 +71,6 @@ export class WebSocketService {
           console.error(`WebSocket error for user ${ws.userId}:`, error);
         });
 
-        // Send initial connection confirmation
         ws.send(JSON.stringify({ type: "connected", userId: decoded.userId }));
       } catch (error) {
         console.error("WebSocket authentication failed:", error);

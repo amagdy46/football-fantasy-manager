@@ -3,10 +3,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/modules/auth";
 import { getWebSocketService } from "@/lib/websocket";
 
-/**
- * Hook to manage WebSocket connection for real-time updates
- * Automatically connects when user is authenticated and disconnects on logout
- */
 export const useWebSocket = () => {
   const queryClient = useQueryClient();
   const { isAuthenticated, token } = useAuth();
@@ -24,7 +20,6 @@ export const useWebSocket = () => {
         wsService.disconnect();
       };
     } else {
-      // Disconnect if not authenticated
       if (wsServiceRef.current) {
         wsServiceRef.current.disconnect();
         wsServiceRef.current = null;

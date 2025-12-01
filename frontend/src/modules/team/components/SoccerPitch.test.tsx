@@ -78,7 +78,6 @@ describe("SoccerPitch", () => {
     const gk = createMockPlayer("1", "GK", "GK Test");
     render(<SoccerPitch players={[gk]} />);
 
-    // GK text appears in both badge and tooltip, get the first one (badge)
     const gkElements = screen.getAllByText("GK");
     const gkBadge = gkElements[0].closest("div");
     expect(gkBadge).toHaveClass("bg-yellow-500");

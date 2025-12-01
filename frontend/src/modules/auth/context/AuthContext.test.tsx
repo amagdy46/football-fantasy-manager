@@ -54,7 +54,6 @@ describe("AuthContext", () => {
 
   describe("useAuth", () => {
     it("should throw error when used outside AuthProvider", () => {
-      // Suppress console.error for this test
       const consoleError = vi
         .spyOn(console, "error")
         .mockImplementation(() => {});

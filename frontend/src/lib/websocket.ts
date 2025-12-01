@@ -79,10 +79,7 @@ export class WebSocketService {
 
   private getWebSocketUrl(): string {
     const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3001/api";
-    // Convert HTTP URL to WebSocket URL
-    // Remove /api suffix if present, then convert protocol
     let baseUrl = apiUrl.replace(/\/api$/, "");
-    // Convert http:// to ws:// and https:// to wss://
     if (baseUrl.startsWith("http://")) {
       baseUrl = baseUrl.replace("http://", "ws://");
     } else if (baseUrl.startsWith("https://")) {

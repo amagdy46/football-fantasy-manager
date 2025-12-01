@@ -2,7 +2,6 @@ import { describe, it, expect, vi, beforeAll, afterAll } from "vitest";
 import prisma from "@/config/database";
 import { PlayerPoolService } from "@/modules/team/services/playerPoolService";
 
-// Mock BullMQ
 vi.mock("bullmq", () => {
   return {
     Queue: class {
@@ -15,7 +14,6 @@ vi.mock("bullmq", () => {
   };
 });
 
-// Mock Redis config
 vi.mock("@/config/redis", () => ({
   default: {
     connection: {},
@@ -29,10 +27,8 @@ describe("Team Creation Worker Logic", () => {
   let userId: string;
 
   beforeAll(async () => {
-    // Force seed to ensure clean state if needed or just ensure it exists
     await PlayerPoolService.seedPlayers();
 
-    // Debug counts
     const gk = await prisma.playerPool.count({ where: { position: "GK" } });
     const def = await prisma.playerPool.count({ where: { position: "DEF" } });
     const mid = await prisma.playerPool.count({ where: { position: "MID" } });

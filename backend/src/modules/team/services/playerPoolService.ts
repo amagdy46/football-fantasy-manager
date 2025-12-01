@@ -13,16 +13,13 @@ interface SeedPlayer {
   };
 }
 
-// Utility to generate random integer
 export const randomInt = (min: number, max: number) =>
   Math.floor(Math.random() * (max - min + 1)) + min;
 
-// Smart algorithm to calculate market value
 export const calculateMarketValue = (
   position: Position,
   age: number
 ): number => {
-  // Probabilistic Tier System
   const rand = Math.random();
   let baseValue = 1000000; // 1M default
 
@@ -40,7 +37,6 @@ export const calculateMarketValue = (
     baseValue = randomInt(500000, 1000000);
   }
 
-  // Age Modifier
   let ageModifier = 1.0;
   if (age < 22) ageModifier = 1.2; // Young potential
   else if (age > 32) ageModifier = 0.6; // Aging
@@ -49,7 +45,6 @@ export const calculateMarketValue = (
   return Math.floor(baseValue * ageModifier);
 };
 
-// Generate random stats based on position and value (proxy for skill)
 export const generateStats = (position: Position, marketValue: number) => {
   let goals = 0;
   let assists = 0;
@@ -76,7 +71,6 @@ export const generateStats = (position: Position, marketValue: number) => {
   return { goals, assists };
 };
 
-// Map position string to Enum
 export const mapPosition = (pos: string | null): Position => {
   if (!pos) return "MID";
   const p = pos.toLowerCase();
