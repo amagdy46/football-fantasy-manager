@@ -8,7 +8,7 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid())
+  id        String   @id @default(dbgenerated("uuidv7()"))
   email     String   @unique
   password  String
   createdAt DateTime @default(now())
@@ -17,7 +17,7 @@ model User {
 }
 
 model Team {
-  id        String   @id @default(uuid())
+  id        String   @id @default(dbgenerated("uuidv7()"))
   userId    String   @unique
   name      String   @default("My Team")
   budget    Decimal  @default(5000000)
@@ -29,7 +29,7 @@ model Team {
 }
 
 model Player {
-  id               String   @id @default(uuid())
+  id               String   @id @default(dbgenerated("uuidv7()"))
   teamId           String
   name             String
   position         Position
@@ -47,7 +47,7 @@ model Player {
 }
 
 model PlayerPool {
-  id           String   @id @default(uuid())
+  id           String   @id @default(dbgenerated("uuidv7()"))
   externalId   String   @unique
   name         String
   position     Position

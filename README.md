@@ -51,7 +51,7 @@ Before running the application, ensure you have the following installed:
 Use Docker Compose to start the database and Redis services.
 
 ```bash
-docker-compose up -d postgres redis
+docker compose up -d postgres redis
 ```
 
 ### 2. Backend Setup
