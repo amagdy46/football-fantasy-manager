@@ -5,7 +5,6 @@ import { playerRoutes, transferRoutes } from "@/modules/transfers";
 
 const router = Router();
 
-// Mount module routes
 router.use("/auth", authRoutes);
 router.use("/team", teamRoutes);
 router.use("/players", playerRoutes);

@@ -3,6 +3,7 @@ import { PlayerPoolService } from "@/modules/team/services/playerPoolService";
 import prisma from "@/config/database";
 import redisConfig from "@/config/redis";
 import { PoolPlayer, TeamCreationJobData } from "../types";
+import { getWebSocketService } from "@/modules/websocket/websocketServer";
 
 const QUEUE_NAME = "team-creation";
 
@@ -94,6 +95,16 @@ export const teamCreationProcessor = async (job: Job<TeamCreationJobData>) => {
       where: { id: team.id },
       data: { isReady: true },
     });
+
+    try {
+      const wsService = getWebSocketService();
+      wsService.sendTeamStatusUpdate(userId, {
+        isReady: true,
+        teamId: team.id,
+      });
+    } catch (error) {
+      console.warn("Could not send WebSocket update:", error);
+    }
 
     console.log(`Team created successfully for user ${userId}`);
     return { teamId: team.id, success: true };

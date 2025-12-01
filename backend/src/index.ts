@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import routes from "@/routes";
 import prisma from "@/config/database";
 import redisConfig from "@/config/redis";
+import { initializeWebSocket } from "@/modules/websocket/websocketServer";
 
 dotenv.config();
 
@@ -31,6 +32,8 @@ app.get("/health", (req, res) => {
 const server = app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
+
+initializeWebSocket(server);
 
 const gracefulShutdown = async (signal: string) => {
   console.log(`${signal} received. Starting graceful shutdown...`);
